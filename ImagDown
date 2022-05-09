@@ -1,0 +1,38 @@
+package Proxy;
+import java.io.*;
+import java.net.URL;
+public class ImagDown extends Thread{
+    public static void downImage(String strImageURL) {
+
+        String strImageName =
+                strImageURL.substring(strImageURL.lastIndexOf("/") + 1);
+
+        System.out.println("Desc imaginea : " + strImageName + ", de pe: " + strImageURL);
+
+        try {
+
+            URL urlImage = new URL(strImageURL);
+            String[] split =  strImageName.split("/");
+            System.out.println("Imaginea " + strImageName + " e salvata");
+            String path = "C:\\imaginiPR" + split[split.length-1];
+
+            InputStream in = urlImage.openStream();
+
+            OutputStream os =
+                    new FileOutputStream("src\\\\main\\\\resources\\\\images" + "\\\\" + strImageName);
+            byte[] buffer = new byte[4096];
+            int n = -1;
+
+            while ((n = in.read(buffer)) != -1) {
+                os.write(buffer, 0, n);
+            }
+
+            os.close();
+
+
+        } catch (IOException e) {
+            System.err.println("Imagine indisponibila: " + strImageURL);
+        }
+
+    }
+}
