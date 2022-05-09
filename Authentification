@@ -1,0 +1,38 @@
+package Proxy;
+import org.jsoup.Connection;
+import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+import java.io.IOException;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
+import java.util.Map;
+
+import static org.jsoup.Jsoup.*;
+public class Authentification {
+    final static  String authUser = "Valeria";
+    final static  String authPassword = "V23G";
+
+    public static Map<String, String> getCookies() {
+        Authenticator.setDefault(
+                new Authenticator() {
+                    public PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(
+                                authUser, authPassword.toCharArray());
+                    }
+                }
+        );
+        System.setProperty("http.proxyHost", "45.152.116.114");
+        System.setProperty("http.proxyPort", "1623");
+        try {
+            return connect("https://www.andys.md/ro/login")
+                    .method(Connection.Method.POST)
+                    .data("email", "valeria.guranda@isa.utm.md")
+                    .data("password", "BOBUTAC23#UTM")
+                    .execute().cookies();
+        } catch (IOException e) {
+            throw new RuntimeException("eroare de logare");
+        }
+    }
+}
