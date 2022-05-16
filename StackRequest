@@ -1,0 +1,99 @@
+package Proxy;
+
+import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.jsoup.Connection.Method.*;
+import static org.jsoup.Jsoup.connect;
+public class StackRequest {
+    private static Map<String, String> cookies = Authentification.getCookies();
+
+    public static Map<String, List<String>> RequestOptions() throws IOException {
+        Response rs = connect("https://stackoverflow.com").method(OPTIONS).cookies(cookies).execute();
+        return rs.multiHeaders();
+    }
+
+    public static String RequestHead() throws IOException {
+        Response rs = connect("https://stackoverflow.com").method(HEAD).cookies(cookies).execute();
+        return rs.contentType();
+    }
+
+
+    public static void getImag(String link) throws IOException, InterruptedException {
+        Document page = Jsoup.connect(link).cookies(cookies).get();
+        ExecutorService ex = Executors.newFixedThreadPool(10);
+        CountDownLatch latch = new CountDownLatch(5);
+        Elements imageElements = page.getElementsByTag("img");
+        for (Element element : imageElements) {
+            ex.submit(() -> {
+                ImagDown.downImage(element.absUrl("src"));
+                latch.countDown();
+                System.out.println(Thread.currentThread().getName());
+
+            });
+        }
+        latch.await();
+        ex.shutdown();
+        ex.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+    }
+    public static void EmailSearch() throws Exception {
+        Response resp = connect("https://stackoverflow.com/users").method(GET).cookies(cookies).execute();
+        String text = resp.body();
+        Pattern p = Pattern.compile("[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+");
+        Matcher matcher = p.matcher(text);
+        Set<String> emails = new HashSet<String>();
+        while (matcher.find()) {
+            emails.add(matcher.group());
+        }
+        System.out.println(emails);
+    }
+    public static String searchNameAcc(String link) throws Exception {
+        Response rs = connect(link).method(GET).cookies(cookies).execute();
+        String text = rs .body();
+        Pattern pattern = Pattern.compile("Guranda Valeria", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.find()) {
+            return "Userul a fost gasit: " + matcher.group();
+        }
+        throw new Exception("User indisponibil");
+    }
+
+
+    public static void LinkGet() throws Exception {
+        Document doc;
+        doc = Jsoup.connect("https://stackoverflow.com").get();
+        Elements elements = doc.select("a[href]");
+        Set<String> links = new HashSet<String>();
+        for (Element e : elements) {
+            links.add(e.attr("abs:href"));
+        }
+        System.out.println("\n" + links);
+    }
+
+
+
+    public static void main(String[] args) throws Exception {
+        System.out.println("\nContent-Type: " + RequestHead());
+        System.out.println("\nOptions response: " + RequestOptions());
+        System.out.println("\n" + searchNameAcc("https://stackoverflow.com/users/19130932/guranda-valeria"));
+        System.out.println("\n" + "The list of all links :");
+        LinkGet();
+        System.out.println("\n" + "The list of all emails :");
+        EmailSearch();
+        System.out.println("\n" + "The list of all images :");
+        getImag("https://stackoverflow.com/users");
+
+    }
+}
