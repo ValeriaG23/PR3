@@ -11,8 +11,8 @@ import java.util.Map;
 
 import static org.jsoup.Jsoup.*;
 public class Authentification {
-    final static  String authUser = "Valeria";
-    final static  String authPassword = "V23G";
+    final static  String authUser = "valeria.guranda@isa.utm.md";
+    final static  String authPassword = "BOBUTAC23#UTM";
 
     public static Map<String, String> getCookies() {
         Authenticator.setDefault(
@@ -26,7 +26,7 @@ public class Authentification {
         System.setProperty("http.proxyHost", "45.152.116.114");
         System.setProperty("http.proxyPort", "1623");
         try {
-            return connect("https://www.andys.md/ro/login")
+            return connect("https://stackoverflow.com/users/login?ssrc=head&returnurl=https%3a%2f%2fstackoverflow.com%2f")
                     .method(Connection.Method.POST)
                     .data("email", "valeria.guranda@isa.utm.md")
                     .data("password", "BOBUTAC23#UTM")
